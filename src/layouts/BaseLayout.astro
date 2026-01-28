@@ -1,0 +1,43 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Sidebar from '../components/Sidebar.astro';
+import MemorialBanner from '../components/MemorialBanner.astro';
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Trish Reske's StoryLines Blog" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content="Write well, run well, live well." />
+  </head>
+  <body class="py-4">
+    <div id="body-container" class="w-[980px] mx-auto bg-white border border-[#222] overflow-hidden">
+
+      <MemorialBanner />
+
+      <Header />
+
+      <div id="container" class="overflow-hidden p-4 bg-white">
+        <div class="flex gap-4">
+          <main class="w-[600px]">
+            <slot />
+          </main>
+
+          <Sidebar />
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  </body>
+</html>

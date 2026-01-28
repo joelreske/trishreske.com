@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+
+  // Get all unique categories from posts
+  const allCategories = new Set<string>();
+  posts.forEach(post => {
+    post.data.categories.forEach(cat => {
+      const slug = cat.toLowerCase().replace(/\s+/g, '-');
+      allCategories.add(slug);
+    });
+  });
+
+  // Add predefined categories too
+  const predefinedSlugs = [
+    'business-insights', 'parenting', 'reflections', 'running', 'writing',
+    'fiction', 'humor-writing', 'travel', 'published-articles', '5k-training'
+  ];
+  predefinedSlugs.forEach(slug => allCategories.add(slug));
+
+  return Array.from(allCategories).map(slug => ({
+    params: { slug },
+    props: { slug },
+  }));
+}
+
+// Category name mapping
+const categoryMap: Record<string, string> = {
+  'business-insights': 'Business Insights',
+  'parenting': 'Parenting',
+  'reflections': 'Reflections',
+  'running': 'Running',
+  'writing': 'Writing',
+  'fiction': 'Fiction',
+  'humor-writing': 'Humor Writing',
+  'travel': 'Travel',
+  'published-articles': 'Published Articles',
+  '5k-training': '5K Training Series',
+};
+
+const { slug } = Astro.props;
+const categoryName = categoryMap[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+const allPosts = await getCollection('posts');
+const filteredPosts = allPosts
+  .filter(post => post.data.categories.some(cat =>
+    cat.toLowerCase().replace(/\s+/g, '-') === slug
+  ))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Helper functions
+function extractFirstImage(content: string): string | undefined {
+  const match = content.match(/!\[.*?\]\((.*?)\)/);
+  return match ? match[1] : undefined;
+}
+
+function createExcerpt(content: string, maxLength: number = 200): string {
+  const cleaned = content
+    .replace(/^#+\s+.*$/gm, '')
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\*{1,2}([^*]*)\*{1,2}/g, '$1')
+    .replace(/_{1,2}([^_]*)_{1,2}/g, '$1')
+    .replace(/\*+/g, '')
+    .replace(/_+/g, ' ')
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleaned.length <= maxLength) return cleaned;
+  return cleaned.substring(0, maxLength).trim() + '...';
+}
+---
+
+<BaseLayout title={`${categoryName} - Trish Reske's StoryLines Blog`}>
+  <div id="content">
+    <h1 class="text-2xl font-serif text-[#600] mb-4">Category: {categoryName}</h1>
+
+    {filteredPosts.length === 0 ? (
+      <p class="text-gray-600">No posts found in this category.</p>
+    ) : (
+      <div class="space-y-4">
+        {filteredPosts.map(post => {
+          const content = post.body || '';
+          const thumbnail = extractFirstImage(content);
+          const excerpt = createExcerpt(content, 200);
+
+          return (
+            <PostCard
+              title={post.data.title}
+              slug={post.id.replace(/\.md$/, '')}
+              date={post.data.date}
+              excerpt={excerpt}
+              thumbnail={thumbnail}
+            />
+          );
+        })}
+      </div>
+    )}
+  </div>
+</BaseLayout>

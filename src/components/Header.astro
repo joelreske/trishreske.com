@@ -1,0 +1,43 @@
+---
+const categories = [
+  { name: 'Business Insights', slug: 'business-insights' },
+  { name: 'Parenting', slug: 'parenting' },
+  { name: 'Reflections', slug: 'reflections' },
+  { name: 'Running', slug: 'running' },
+  { name: 'Writing', slug: 'writing' },
+];
+---
+
+<nav id="top-navigation" class="w-[950px] mx-auto px-4 bg-white border-b-[3px] border-double border-gray-300">
+  <ul class="py-[10px] ml-[70px] m-0 list-none">
+    {categories.map(cat => (
+      <li class="inline mr-5">
+        <a href={`/category/${cat.slug}`} class="text-[0.9em] text-gray-600 no-underline hover:text-gray-800">{cat.name}</a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<div id="header-container" class="overflow-auto bg-white">
+  <div id="header" class="px-4">
+    <!-- Banner image as the main header logo -->
+    <a href="/" title="Trish Reske's StoryLines Blog" class="block">
+      <img
+        src="/images/theme/Banner20090202.jpg"
+        alt="Trish Reske's StoryLines Blog - Write well, run well, live well."
+        class="w-[952px] h-[120px] my-2 !p-0 !border-0 !bg-transparent"
+      />
+    </a>
+  </div>
+</div>
+
+<div id="navigation" class="overflow-hidden w-[950px] mx-4 bg-white border border-gray-300">
+  <ul class="list-none m-0 p-0">
+    <li class="float-left">
+      <a href="/about" class="block text-center text-gray-600 py-[7px] px-4 bg-white border-r border-gray-100 no-underline hover:bg-gray-50">
+        Trish Reske Bio
+      </a>
+    </li>
+  </ul>
+  <div class="clear-both"></div>
+</div>

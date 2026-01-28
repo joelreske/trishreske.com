@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('posts');
+const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Featured post is the most recent
+const featuredPost = sortedPosts[0];
+const otherPosts = sortedPosts.slice(1, 9); // Next 8 posts for the grid
+
+// Helper to extract first image from content
+function extractFirstImage(content: string): string | undefined {
+  const match = content.match(/!\[.*?\]\((.*?)\)/);
+  return match ? match[1] : undefined;
+}
+
+// Helper to create excerpt from content
+function createExcerpt(content: string, maxLength: number = 200): string {
+  // Remove markdown formatting
+  const cleaned = content
+    // Remove headings
+    .replace(/^#+\s+.*$/gm, '')
+    // Remove images
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    // Remove links but keep text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    // Remove bold/italic markers (including empty ones)
+    .replace(/\*{1,2}([^*]*)\*{1,2}/g, '$1')
+    .replace(/_{1,2}([^_]*)_{1,2}/g, '$1')
+    // Remove any remaining asterisks or underscores used for formatting
+    .replace(/\*+/g, '')
+    .replace(/_+/g, ' ')
+    // Clean up whitespace
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleaned.length <= maxLength) return cleaned;
+  return cleaned.substring(0, maxLength).trim() + '...';
+}
+
+// Read the content body for featured post
+const featuredContent = featuredPost.body || '';
+const featuredImage = extractFirstImage(featuredContent);
+const featuredExcerpt = createExcerpt(featuredContent, 400);
+---
+
+<BaseLayout>
+  <div id="home" class="home left">
+    <!-- Featured Post -->
+    <div id="feature">
+      <PostCard
+        title={featuredPost.data.title}
+        slug={featuredPost.id.replace(/\.md$/, '')}
+        date={featuredPost.data.date}
+        excerpt={featuredExcerpt}
+        thumbnail={featuredImage}
+        featured={true}
+      />
+    </div>
+
+    <!-- Post Grid -->
+    <div id="excerpts" class="blocks">
+      {otherPosts.map((post, index) => {
+        const content = post.body || '';
+        const thumbnail = extractFirstImage(content);
+        const excerpt = createExcerpt(content, 150);
+
+        return (
+          <div class={`post ${index % 2 === 0 ? 'odd' : 'even'} w-[272px] ${index % 2 === 0 ? 'float-left clear-both' : 'float-right clear-none'}`}>
+            <PostCard
+              title={post.data.title}
+              slug={post.id.replace(/\.md$/, '')}
+              date={post.data.date}
+              excerpt={excerpt}
+              thumbnail={thumbnail}
+            />
+          </div>
+        );
+      })}
+      <div class="clear-both"></div>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,67 @@
+---
+interface Props {
+  title: string;
+  slug: string;
+  date: Date;
+  excerpt: string;
+  thumbnail?: string;
+  featured?: boolean;
+}
+
+const { title, slug, date, excerpt, thumbnail, featured = false } = Astro.props;
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+---
+
+{featured ? (
+  <div class="feature-post">
+    <h2 class="text-xl font-serif mb-1">
+      <a href={`/posts/${slug}`} class="text-[#900] hover:text-black hover:underline">{title}</a>
+    </h2>
+
+    {thumbnail && (
+      <a href={`/posts/${slug}`}>
+        <img src={thumbnail} alt={title} class="feature-image" />
+      </a>
+    )}
+
+    <p class="byline">
+      By <span class="font-semibold">Trish</span>
+      on <span class="time">{formatDate(date)}</span>
+    </p>
+
+    <div class="entry">
+      <p>{excerpt}</p>
+    </div>
+
+    <div class="post-meta">
+      <a href={`/posts/${slug}`}>Read full story &raquo;</a>
+    </div>
+  </div>
+) : (
+  <div class="post-card">
+    {thumbnail && (
+      <a href={`/posts/${slug}`}>
+        <img src={thumbnail} alt={title} class="thumbnail" />
+      </a>
+    )}
+
+    <h3 class="text-base font-serif mb-1">
+      <a href={`/posts/${slug}`} class="text-[#900] hover:text-black hover:underline">{title}</a>
+    </h3>
+
+    <div class="entry text-sm">
+      <p>{excerpt}</p>
+    </div>
+
+    <div class="post-meta clear-left">
+      <a href={`/posts/${slug}`}>Read more &raquo;</a>
+    </div>
+  </div>
+)}

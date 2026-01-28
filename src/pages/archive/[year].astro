@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const years = [...new Set(posts.map(post => post.data.date.getFullYear()))];
+
+  return years.map(year => ({
+    params: { year: String(year) },
+    props: { year },
+  }));
+}
+
+const { year } = Astro.props;
+
+const allPosts = await getCollection('posts');
+const filteredPosts = allPosts
+  .filter(post => post.data.date.getFullYear() === year)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Helper functions
+function extractFirstImage(content: string): string | undefined {
+  const match = content.match(/!\[.*?\]\((.*?)\)/);
+  return match ? match[1] : undefined;
+}
+
+function createExcerpt(content: string, maxLength: number = 200): string {
+  const cleaned = content
+    .replace(/^#+\s+.*$/gm, '')
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\*{1,2}([^*]*)\*{1,2}/g, '$1')
+    .replace(/_{1,2}([^_]*)_{1,2}/g, '$1')
+    .replace(/\*+/g, '')
+    .replace(/_+/g, ' ')
+    .replace(/\n+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleaned.length <= maxLength) return cleaned;
+  return cleaned.substring(0, maxLength).trim() + '...';
+}
+---
+
+<BaseLayout title={`${year} Archives - Trish Reske's StoryLines Blog`}>
+  <div id="content">
+    <h1 class="text-2xl font-serif text-[#600] mb-4">Archive: {year}</h1>
+
+    {filteredPosts.length === 0 ? (
+      <p class="text-gray-600">No posts found for this year.</p>
+    ) : (
+      <div class="space-y-4">
+        {filteredPosts.map(post => {
+          const content = post.body || '';
+          const thumbnail = extractFirstImage(content);
+          const excerpt = createExcerpt(content, 200);
+
+          return (
+            <PostCard
+              title={post.data.title}
+              slug={post.id.replace(/\.md$/, '')}
+              date={post.data.date}
+              excerpt={excerpt}
+              thumbnail={thumbnail}
+            />
+          );
+        })}
+      </div>
+    )}
+
+    <p class="mt-6 text-gray-600">
+      {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''} from {year}
+    </p>
+  </div>
+</BaseLayout>

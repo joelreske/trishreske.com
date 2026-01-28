@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('posts');
+const sortedPosts = allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const recentPosts = sortedPosts.slice(0, 5);
+
+// Get unique years for archives
+const years = [...new Set(allPosts.map(post => post.data.date.getFullYear()))].sort((a, b) => b - a);
+
+const categories = [
+  { name: 'Business Insights', slug: 'business-insights' },
+  { name: 'Parenting', slug: 'parenting' },
+  { name: 'Reflections', slug: 'reflections' },
+  { name: 'Running', slug: 'running' },
+  { name: 'Writing', slug: 'writing' },
+];
+
+const writingSubcategories = [
+  { name: 'Fiction', slug: 'fiction' },
+  { name: 'Humor Writing', slug: 'humor-writing' },
+  { name: 'Travel', slug: 'travel' },
+  { name: 'Published Articles', slug: 'published-articles' },
+];
+---
+
+<aside id="sidebar" class="w-[335px]">
+  <!-- About Section -->
+  <div class="sidebar-menu">
+    <h2 class="section-header">About Trish Reske</h2>
+    <div class="overflow-hidden">
+      <img src="/images/uploads/2009/02/Trish_Rome.jpg" alt="Trish Reske" class="float-right w-[100px] ml-2 mb-2" />
+      <p class="text-sm">
+        My professional experience includes leading the creative efforts of three companies I have co-owned.
+        I'm a seasoned copywriter/creative director, award-winning journalist, avid runner, and mom of four.
+      </p>
+    </div>
+  </div>
+
+  <!-- Recent Posts -->
+  <div class="sidebar-menu">
+    <h2 class="section-header">Recent Posts</h2>
+    <ul>
+      {recentPosts.map(post => (
+        <li>
+          <a href={`/posts/${post.id.replace(/\.md$/, '')}`}>{post.data.title}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <!-- Categories -->
+  <div class="sidebar-menu">
+    <h2 class="section-header">Categories</h2>
+    <ul>
+      {categories.map(cat => (
+        <li>
+          <a href={`/category/${cat.slug}`}>{cat.name}</a>
+        </li>
+      ))}
+    </ul>
+
+    <h3 class="section-header text-base mt-4">Writing Subcategories</h3>
+    <ul>
+      {writingSubcategories.map(cat => (
+        <li>
+          <a href={`/category/${cat.slug}`}>{cat.name}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <!-- Archives -->
+  <div class="sidebar-menu">
+    <h2 class="section-header">Archives</h2>
+    <ul>
+      {years.map(year => (
+        <li>
+          <a href={`/archive/${year}`}>{year}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</aside>
